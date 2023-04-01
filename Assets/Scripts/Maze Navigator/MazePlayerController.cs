@@ -21,7 +21,7 @@ public class MazePlayerController : MonoBehaviour
         int? movement = null;
         Vector3 input = InputMapper.MainAxis();
         if (input.magnitude > .2) {
-            input = Camera.main.transform.TransformVector(input);
+            input = ObserverController.main.transform.TransformVector(input);
             Debug.DrawLine(transform.position, transform.position + input, Color.red);
             float potency = 0;
             movement = navigator.NeighbourInDirection(input, ref potency);

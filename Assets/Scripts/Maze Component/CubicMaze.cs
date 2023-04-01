@@ -6,7 +6,7 @@ public class CubicMaze : Maze
 {
     protected override void GenerateGraph(int size) {
         float halfSize = (size - 1)/2f;
-        float planeDistance = halfSize + 1;
+        float planeDistance = halfSize + 1 / Mathf.Sqrt(2);
         for (float i = -halfSize; i <= halfSize; i++)
         {
             int iInd = (int)(i + halfSize);
@@ -42,6 +42,25 @@ public class CubicMaze : Maze
                 edges.Add(new Vector2Int(xEnd + 2 * k, yEnd + 2 * ((k + 1) % 3)));
                 edges.Add(new Vector2Int(xEnd + 2 * k + 1, yStart + 2 * ((k + 1) % 3)));
             }
+        }
+    }
+
+    public override Vector3 GetNormal(int point) {
+        switch (point % 6) {
+            case 0:
+                return transform.up;
+            case 1:
+                return - transform.up;
+            case 2:
+                return transform.forward;
+            case 3:
+                return - transform.forward;
+            case 4:
+                return transform.right;
+            case 5:
+                return - transform.right;
+            default:
+                return Vector3.zero;
         }
     }
 }

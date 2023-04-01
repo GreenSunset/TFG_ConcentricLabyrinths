@@ -24,14 +24,20 @@ public static class InputMapper
         return Mathf.Clamp(axis, -1, 1);
     }
 
-    public static float AxisW()
+    public static float AxisU()
     {
-        float axis = Input.GetAxis("Keyboard W") + gamepad.leftStick.x.ReadValue();
+        float axis = Input.GetAxis("Keyboard U") + gamepad.leftStick.x.ReadValue();
         return Mathf.Clamp(axis, -1, 1);
     }
     public static float AxisV()
     {
         float axis = Input.GetAxis("Keyboard V") + gamepad.leftStick.y.ReadValue();
+        return Mathf.Clamp(axis, -1, 1);
+    }
+
+    public static float AxisW()
+    {
+        float axis = Input.GetAxis("Keyboard W") + gamepad.dpad.up.ReadValue() - gamepad.dpad.down.ReadValue();
         return Mathf.Clamp(axis, -1, 1);
     }
 

@@ -6,6 +6,7 @@ public class Maze : MonoBehaviour
 {
     public bool showNeighbours = false;
     public GameObject wallPrefab;
+    public int size = 10;
     public List<Vector3> points = new List<Vector3>();
     public List<Vector2Int> edges = new List<Vector2Int>();
     public Dictionary<int, HashSet<int>> maze = new Dictionary<int, HashSet<int>>();
@@ -38,9 +39,12 @@ public class Maze : MonoBehaviour
     public void GenerateMaze()
     {
         ClearMaze();
-        int size = 10;
         GenerateGraph(size);
         GenerateMaze(size);
+    }
+
+    public virtual Vector3 GetNormal(int point) {
+        return transform.up;
     }
 
     protected virtual void GenerateGraph(int size) {
@@ -65,31 +69,32 @@ public class Maze : MonoBehaviour
             graph[edge.x].Add(edge.y);
             graph[edge.y].Add(edge.x);
         }
-        List<int> visited = new List<int>();
-        List<int> stack = new List<int>();
-        int current = Random.Range(0, points.Count);
-        visited.Add(current);
-        while (visited.Count < points.Count)
-        {
-            List<int> neighbors = new List<int>(graph[current]);
-            neighbors.RemoveAll(x => visited.Contains(x));
-            if (neighbors.Count > 0)
-            {
-                int next = neighbors[Random.Range(0, neighbors.Count)];
-                stack.Add(current);
-                if (!maze.ContainsKey(current)) maze.Add(current, new HashSet<int>());
-                if (!maze.ContainsKey(next)) maze.Add(next, new HashSet<int>());
-                maze[current].Add(next);
-                maze[next].Add(current);
-                current = next;
-                visited.Add(current);
-            }
-            else
-            {
-                current = stack[stack.Count - 1];
-                stack.RemoveAt(stack.Count - 1);
-            }
-        }
+        maze = graph;
+        // List<int> visited = new List<int>();
+        // List<int> stack = new List<int>();
+        // int current = Random.Range(0, points.Count);
+        // visited.Add(current);
+        // while (visited.Count < points.Count)
+        // {
+        //     List<int> neighbors = new List<int>(graph[current]);
+        //     neighbors.RemoveAll(x => visited.Contains(x));
+        //     if (neighbors.Count > 0)
+        //     {
+        //         int next = neighbors[Random.Range(0, neighbors.Count)];
+        //         stack.Add(current);
+        //         if (!maze.ContainsKey(current)) maze.Add(current, new HashSet<int>());
+        //         if (!maze.ContainsKey(next)) maze.Add(next, new HashSet<int>());
+        //         maze[current].Add(next);
+        //         maze[next].Add(current);
+        //         current = next;
+        //         visited.Add(current);
+        //     }
+        //     else
+        //     {
+        //         current = stack[stack.Count - 1];
+        //         stack.RemoveAt(stack.Count - 1);
+        //     }
+        // }
     }
 
     private void OnDrawGizmos()

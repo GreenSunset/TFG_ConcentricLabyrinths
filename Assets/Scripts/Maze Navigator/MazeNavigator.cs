@@ -5,9 +5,10 @@ using UnityEngine;
 public class MazeNavigator : MonoBehaviour
 {
     public Maze maze;
-    [SerializeField] private int currentPointIndex = -1;
-    [SerializeField] private int nextPointIndex = -1;
-    [SerializeField] private float current2nextRatio = 0;
+    public int currentPointIndex { get; private set;} = -1;
+    public int nextPointIndex { get; private set;} = -1;
+    public float current2nextRatio { get; private set;} = 0;
+
 
 
     void Start()
