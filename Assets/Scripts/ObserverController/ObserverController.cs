@@ -9,7 +9,6 @@ public class ObserverController : MonoBehaviour
     public Maze maze;
     private Camera cam;
     private Vector2 currentTilt = Vector2.zero;
-    private float currentZoom = 0;
     [SerializeField] private float tiltSpeed = 10;
 
     void Start()

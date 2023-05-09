@@ -1,10 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class MazeNavigator : MonoBehaviour
 {
     public Maze maze;
+
+    public UnityEvent OnExitReached;
     public int currentPointIndex { get; private set;} = -1;
     public int nextPointIndex { get; private set;} = -1;
     public float current2nextRatio { get; private set;} = 0;
@@ -13,6 +16,9 @@ public class MazeNavigator : MonoBehaviour
 
     void Start()
     {
+        OnExitReached.AddListener(() => {
+            Message("You win!");
+        });
         SnapToMaze();
     }
 
@@ -95,6 +101,10 @@ public class MazeNavigator : MonoBehaviour
         return neighbour;
     }
 
+    public void Message(string message) {
+        Debug.Log(message);
+    }
+
     public void MoveTowards(int index, float progress) {
         if (currentPointIndex == index) {
             current2nextRatio -= progress;
@@ -127,6 +137,9 @@ public class MazeNavigator : MonoBehaviour
             transform.localPosition = maze.points[currentPointIndex];
         } else {
             transform.localPosition = Vector3.Lerp(maze.points[currentPointIndex], maze.points[nextPointIndex], current2nextRatio);
+        }
+        if (currentPointIndex == maze.exitIndex && current2nextRatio < .3) {
+            OnExitReached.Invoke();
         }
     }
 }

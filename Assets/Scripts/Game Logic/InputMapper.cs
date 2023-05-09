@@ -8,13 +8,13 @@ public static class InputMapper
     static Gamepad gamepad = Gamepad.current;
     public static float AxisX()
     {
-        float axis = Input.GetAxis("Keyboard X") + gamepad.rightStick.x.ReadValue();
+        float axis = Input.GetAxis("Keyboard X") + gamepad.leftStick.x.ReadValue();
         return Mathf.Clamp(axis, -1, 1);
     }
 
     public static float AxisY()
     {
-        float axis = Input.GetAxis("Keyboard Y") + gamepad.rightStick.y.ReadValue();
+        float axis = Input.GetAxis("Keyboard Y") + gamepad.leftStick.y.ReadValue();
         return Mathf.Clamp(axis, -1, 1);
     }
 
@@ -26,12 +26,12 @@ public static class InputMapper
 
     public static float AxisU()
     {
-        float axis = Input.GetAxis("Keyboard U") + gamepad.leftStick.x.ReadValue();
+        float axis = Input.GetAxis("Keyboard U") + gamepad.rightStick.x.ReadValue();
         return Mathf.Clamp(axis, -1, 1);
     }
     public static float AxisV()
     {
-        float axis = Input.GetAxis("Keyboard V") + gamepad.leftStick.y.ReadValue();
+        float axis = Input.GetAxis("Keyboard V") + gamepad.rightStick.y.ReadValue();
         return Mathf.Clamp(axis, -1, 1);
     }
 
@@ -42,6 +42,11 @@ public static class InputMapper
     }
 
     public static Vector3 MainAxis()
+    {
+        return new Vector3(AxisX(), AxisZ(), AxisY());
+    }
+
+    public static Vector3 MainAxis2D()
     {
         return new Vector3(AxisX(), AxisY(), 0);
     }

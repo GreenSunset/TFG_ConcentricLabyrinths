@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class SphericMaze : Maze
 {
-    protected override void GenerateGraph(int size) {
+    protected override void GenerateGraph() {
         int numPoints = Mathf.RoundToInt(4* Mathf.PI * size * size);
         float dlong = Mathf.PI * (3-Mathf.Sqrt(5));
         float dz = 2f / numPoints;

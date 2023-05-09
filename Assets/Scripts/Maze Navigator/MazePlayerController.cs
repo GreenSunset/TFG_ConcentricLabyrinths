@@ -19,7 +19,7 @@ public class MazePlayerController : MonoBehaviour
     {
         if (navigator == null || lockControls) return;
         int? movement = null;
-        Vector3 input = InputMapper.MainAxis();
+        Vector3 input = InputMapper.MainAxis2D();
         if (input.magnitude > .2) {
             input = ObserverController.main.transform.TransformVector(input);
             Debug.DrawLine(transform.position, transform.position + input, Color.red);
