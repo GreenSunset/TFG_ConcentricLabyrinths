@@ -3,55 +3,73 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(MeshFilter))]
-public class Maze : MonoBehaviour
+public class SimpleMaze
 {
-    public bool showNeighbours = false;
-    public GameObject wallPrefab;
     [Range(1, 100)]
     public int size = 10;
-    public int exitIndex {get; protected set;} = -2;
-    [SerializeField] private MeshFilter meshFilter;
+    public int nPlanes {get; protected set;} = 1;
+    public Vector3Int entryIndex {get; protected set;} = new Vector3Int(0, 0, 0);
+    public Vector3Int exitIndex {get; protected set;} = new Vector3Int(0, 0, 0);
     public List<Vector3> points = new List<Vector3>();
     public Dictionary<int, List<int>> graph = new Dictionary<int, List<int>>();
     public Dictionary<int, HashSet<int>> maze = new Dictionary<int, HashSet<int>>();
 
-    void Start()
-    {
-        meshFilter = GetComponent<MeshFilter>();
-        GenerateMaze();
+    public SimpleMaze(int size = 1) {
+        this.size = size;
     }
 
-    [ContextMenu("Clear")]
+    public bool AreValidCoordinates(Vector3Int coordinates) {
+        return coordinates.x >= 0 && coordinates.x < size && coordinates.y >= 0 && coordinates.y < size && coordinates.z >= 0 && coordinates.z < nPlanes;
+    }
+
+    public Vector3Int Index2Coordinates(int index) {
+        int z = index % nPlanes;
+        index /= nPlanes;
+        int y = index % size;
+        index /= size;
+        int x = index;
+        if (x < 0 || x >= size)
+            Debug.LogWarning("Index out of range: " + index);
+        return new Vector3Int(x, y, z);
+    }
+
+    public int Coordinates2Index(Vector3Int coordinates) {
+        if (coordinates.x < 0 || coordinates.x >= size)
+            Debug.LogWarning("Coordinates X out of range: " + coordinates);
+        if (coordinates.y < 0 || coordinates.y >= size)
+            Debug.LogWarning("Coordinates Y out of range: " + coordinates);
+        if (coordinates.z < 0 || coordinates.z >= nPlanes)
+            Debug.LogWarning("Coordinates Z out of range: " + coordinates);
+        return nPlanes * (coordinates.x * size + coordinates.y) + coordinates.z;
+    }
+
     public void ClearMaze()
     {
         points.Clear();
         graph.Clear();
         maze.Clear();
-        meshFilter.sharedMesh = null;
     }
 
     [ContextMenu("Generate Maze")]
-    public void GenerateMaze()
+    public void GenerateMaze(Vector3Int exit)
     {
         ClearMaze();
         GenerateGraph();
-        GenerateMaze(size);
-        GenerateMesh();
+        GenerateMaze(size, exit);
     }
 
     public virtual Vector3 GetNormal(int point) {
-        return transform.up;
+        return Vector3.up;
     }
     
     public virtual Quaternion GetRotation(int point) {
         return Quaternion.identity;
     }
 
-    protected virtual void GenerateMesh() {
-        if (points.Count == 0 || graph.Count == 0) return;
+    public virtual Mesh GenerateMesh() {
+        if (points.Count == 0 || graph.Count == 0) return new Mesh();
 
         float r = 0.2f;
-
         List<Vector3> vertices = new List<Vector3>();
         List<int> triangles = new List<int>();
         // List<Vector3> normals = new List<Vector3>();
@@ -96,7 +114,7 @@ public class Maze : MonoBehaviour
             pointVertexMap.Add(i, new List<int>());
             for (int j = 0; j < templateVertices.Count; j++)
             {
-                float angle = Vector3.Angle(transform.up, normal);
+                float angle = Vector3.Angle(Vector3.up, normal);
                 Vector3 vertex = Quaternion.Inverse(rotation) * templateVertices[j];
                 vertex += point;
                 vertices.Add(vertex);
@@ -104,12 +122,14 @@ public class Maze : MonoBehaviour
                 pointVertexMap[i].Add(vertices.Count - 1);
             }
 
-            triangles.Add(templateVertices.Count * i);
-            triangles.Add(templateVertices.Count * i + 1);
-            triangles.Add(templateVertices.Count * i + 2);
-            triangles.Add(templateVertices.Count * i + 2);
-            triangles.Add(templateVertices.Count * i + 3);
-            triangles.Add(templateVertices.Count * i + 0);
+            if (i != Coordinates2Index(exitIndex) && i != Coordinates2Index(entryIndex)) {
+                triangles.Add(templateVertices.Count * i);
+                triangles.Add(templateVertices.Count * i + 1);
+                triangles.Add(templateVertices.Count * i + 2);
+                triangles.Add(templateVertices.Count * i + 2);
+                triangles.Add(templateVertices.Count * i + 3);
+                triangles.Add(templateVertices.Count * i + 0);
+            }
             for (int startL = 0; startL < graph[i].Count; startL++) {
                 int startR = (startL + 1) % 4;
                 int neighbor = graph[i][startL];
@@ -186,21 +206,13 @@ public class Maze : MonoBehaviour
                     }
                 }
             }
-            // Connect to already visited points
-            foreach (int j in graph[i]) {
-                if (j > i && j % 6 == i % 6) {
-                    // calculate neighbourhood direction
-                    Vector3 direction = points[j] - point;
-
-                    // connect corresponding vertices
-                }
-            }
         }
             
-        meshFilter.sharedMesh = new Mesh();
-        meshFilter.sharedMesh.vertices = vertices.ToArray();
-        meshFilter.sharedMesh.triangles = triangles.ToArray();
-        meshFilter.sharedMesh.RecalculateNormals();
+        Mesh mesh = new Mesh();
+        mesh.vertices = vertices.ToArray();
+        mesh.triangles = triangles.ToArray();
+        mesh.RecalculateNormals();
+        return mesh;
     }
     
     protected virtual void GenerateGraph() {
@@ -218,8 +230,9 @@ public class Maze : MonoBehaviour
         }
     }
 
-    protected virtual void GenerateMaze(int size) {
+    protected virtual void GenerateMaze(int size, Vector3Int exit) {
         if (points.Count == 0 || this.graph.Count == 0) return;
+        exitIndex = exit;
         List<int> visited = new List<int>();
         List<int> stack = new List<int>();
         int current = Random.Range(0, points.Count);
@@ -245,39 +258,8 @@ public class Maze : MonoBehaviour
                 stack.RemoveAt(stack.Count - 1);
             }
         }
-        exitIndex = Random.Range(0, points.Count);
-    }
-
-    private void OnDrawGizmos()
-    {
-        if (maze == null) return;
-        for (int i = 0; i < points.Count && graph.Count > 0; i++) {
-            foreach (var neighbour in graph[i])
-            {
-                if (neighbour == -1 || neighbour < i) continue;
-                if (maze.ContainsKey(i) && maze[i].Contains(neighbour)) {
-                    Gizmos.color = Color.green;
-                    Gizmos.DrawLine(points[i] + transform.position, points[neighbour] + transform.position);
-                } else {
-                    Gizmos.color = Color.red;
-                    Gizmos.DrawLine(points[i] + transform.position, points[neighbour] + transform.position);
-                }
-            }
-        }
-        Gizmos.color = Color.red;
-        for (int i = 0; i < points.Count; i++) {
-            if (i == exitIndex) {
-                Gizmos.color = Color.green;
-                Gizmos.DrawSphere(points[i] + transform.position, 0.1f);
-                Gizmos.color = Color.red;
-            } else {
-                Gizmos.DrawSphere(points[i] + transform.position, 0.1f);
-            }
-        }
-        // foreach (var point in points)
-        // {
-        //     Gizmos.DrawSphere(point + transform.position, 0.1f);
-        // }
+        // entryIndex = exit + new Vector3Int(exit.x == (size - 1) ? -1 : 1, exit.y == (size - 1) ? -1 : 1, 0);
+        entryIndex = new Vector3Int(Random.Range(0, size), Random.Range(0, size), Random.Range(0, nPlanes));
     }
 
     protected void AddEdge(int a, int b) {

@@ -6,6 +6,24 @@ using UnityEngine.InputSystem;
 public static class InputMapper
 {
     static Gamepad gamepad = Gamepad.current;
+
+    public static float DPadH()
+    {
+        float axis = gamepad.dpad.right.ReadValue() - gamepad.dpad.left.ReadValue();
+        return Mathf.Clamp(axis, -1, 1);
+    }
+
+    public static float DPadV()
+    {
+        float axis = gamepad.dpad.up.ReadValue() - gamepad.dpad.down.ReadValue();
+        return Mathf.Clamp(axis, -1, 1);
+    }
+
+    public static Vector2 DPad()
+    {
+        return new Vector2(DPadH(), DPadV());
+    }
+
     public static float AxisX()
     {
         float axis = Input.GetAxis("Keyboard X") + gamepad.leftStick.x.ReadValue();
@@ -37,7 +55,7 @@ public static class InputMapper
 
     public static float AxisW()
     {
-        float axis = Input.GetAxis("Keyboard W") + gamepad.dpad.up.ReadValue() - gamepad.dpad.down.ReadValue();
+        float axis = Input.GetAxis("Keyboard W") + gamepad.rightShoulder.ReadValue() - gamepad.leftShoulder.ReadValue();
         return Mathf.Clamp(axis, -1, 1);
     }
 

@@ -4,7 +4,7 @@ using UnityEngine;
 
 [RequireComponent(typeof(Camera))]
 [ExecuteInEditMode]
-public class MazeVisualizer : MonoBehaviour
+public class MazeVisualizerShader : MonoBehaviour
 {
     public Maze maze;
     public ComputeShader visShader;
