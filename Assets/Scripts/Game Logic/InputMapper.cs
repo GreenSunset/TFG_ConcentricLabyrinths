@@ -61,7 +61,7 @@ public static class InputMapper
 
     public static Vector3 MainAxis()
     {
-        return new Vector3(AxisX(), AxisZ(), AxisY());
+        return new Vector3(AxisX(), AxisY(), AxisZ());
     }
 
     public static Vector3 MainAxis2D()

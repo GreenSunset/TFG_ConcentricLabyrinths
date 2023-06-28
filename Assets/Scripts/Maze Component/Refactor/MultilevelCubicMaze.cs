@@ -112,7 +112,6 @@ public class MultilevelCubicMaze : MultilevelMaze
                         points.Add(faces[plane] * new Vector3(x, planeDistance, z));
                     }
                 }
-
                 int[] edges = new int[] {
                     stride + nPlanes * iInd,
                     stride + nPlanes * (iInd * size + (size - 1)),

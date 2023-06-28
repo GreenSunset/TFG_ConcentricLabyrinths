@@ -1,0 +1,39 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+[RequireComponent(typeof(PrototypeNavigator))]
+public class PrototypeController : MonoBehaviour
+{
+    public float speed = 5;
+    public bool lockControls = false;
+    private PrototypeNavigator navigator;
+    // Start is called before the first frame update
+    void Start()
+    {
+        navigator = GetComponent<PrototypeNavigator>();
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        if (navigator == null || lockControls) return;
+        int? movement = null;
+        Vector3 input = InputMapper.MainAxis();
+        float vertical = InputMapper.DPadV();
+        if (vertical > 0) {
+        } else if (vertical < 0) {
+        } else if (input.magnitude > .2) {
+            input = PrototypeObserver.main.transform.TransformVector(input);
+            // input = navigator.maze.faces[navigator.currentPointIndex % navigator.maze.nPlanes] * input;
+            Debug.DrawLine(transform.position, transform.position + input, Color.red);
+            float potency = 0;
+            movement = navigator.NeighbourInDirection(input, ref potency);
+            potency = Mathf.Cos(Mathf.Deg2Rad * potency);
+            if (movement != null) {
+                // Debug.Log("Moving towards " + movement + " with potency " + potency);
+                navigator.MoveTowards((int) movement, Time.deltaTime * input.magnitude * potency * speed);
+            }
+        }
+    }
+}

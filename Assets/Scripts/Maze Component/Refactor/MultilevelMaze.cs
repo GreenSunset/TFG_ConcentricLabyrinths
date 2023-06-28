@@ -28,6 +28,10 @@ public abstract class MultilevelMaze : MonoBehaviour
     public Dictionary<int, List<int>> graph { get; protected set; } = new Dictionary<int, List<int>>();
     public Dictionary<int, HashSet<int>> maze { get; protected set; } = new Dictionary<int, HashSet<int>>();
 
+    public Quaternion GetRotation(int index) {
+        return faces[index % nPlanes];
+    }
+
     abstract public int FaceSize(int levelSize);
 
     public int LevelSize(int levelSize) {
