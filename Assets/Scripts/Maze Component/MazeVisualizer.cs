@@ -63,8 +63,7 @@ public class MazeVisualizer : MonoBehaviour
             return;
         }
         int startSize = maze.maxSize % maze.nCases == 0 ? maze.nCases : maze.maxSize % maze.nCases;
-        float focusSize = maze.nCases * level + startSize;
-        int currentSize = maze.nCases * Mathf.FloorToInt(level) + startSize;
+        int currentSize = maze.nCases * level + startSize;
         if (level < 0 || currentSize > maze.maxSize) {
             return;
         }
@@ -77,10 +76,9 @@ public class MazeVisualizer : MonoBehaviour
         int[] list = new int[]{0,0,0, 0};
         for (int i = startIndex; i < endIndex; i++) {
             vertexStart.Add(i, vertices.Count);
-            Quaternion face = maze.GetRotation(i);
             List<int> neighbors = new List<int>(maze.graph[i]);
-            Vector3 normal = face * Vector3.up;
-            Vector3 north = face * Vector3.forward;
+            Vector3 normal = maze.GetNormal(i);
+            Vector3 north = maze.GetNorth(i);
             if (maze.maze[i].Contains(neighbors[neighbors.Count - 2])) {
                 GameObject light = new GameObject("Light " + i, typeof(Light));
                 Light l = light.GetComponent<Light>();
@@ -88,7 +86,7 @@ public class MazeVisualizer : MonoBehaviour
                 l.spotAngle = 60;
                 l.range = 2;
                 light.transform.position = maze.points[i] + normal * 0.5f;
-                light.transform.rotation = face * Quaternion.Euler(90, 0, 0);
+                light.transform.up = normal;
                 lights.Add(light);
 
             }
@@ -100,8 +98,8 @@ public class MazeVisualizer : MonoBehaviour
                 Vector3 pointNormal = Vector3.zero;
                 List<Vector3> normals = new List<Vector3>(new HashSet<Vector3>() {
                     normal,
-                    maze.GetRotation(neighbors[j]) * Vector3.up,
-                    maze.GetRotation(neighbors[prev]) * Vector3.up,
+                    maze.GetNormal(neighbors[j]),
+                    maze.GetNormal(neighbors[prev]),
                 });
                 foreach (Vector3 n in normals) pointNormal += n;
                 pointNormal /= normals.Count;
@@ -178,7 +176,8 @@ public class MazeVisualizer : MonoBehaviour
                         triangles.Add(vertexStart[i] + 4 * ((j + 1) % neighbors.Count) + 3);
                         triangles.Add(vertexStart[neighbors[j]] + 4 * opposite + 3);
 
-                    } else {
+                    }
+                    else {
                         // Top
                         triangles.Add(vertexStart[i] + 4 * j + 1);
                         triangles.Add(vertexStart[neighbors[j]] + 4 * ((opposite + 1) % neighbors2.Count) + 1);
@@ -309,8 +308,7 @@ public class MazeVisualizer : MonoBehaviour
         int endIndex = maze.Level2Stride(currentSize + maze.nCases);
         int nPoints = maze.points.Count;
         for (int i = 0; i < nPoints; i++) {
-            MultilevelCubicMaze.Coordinate coord = maze.Idx2Coord(i, maze.maxSize);
-            int idxSize = coord.levelSize;
+            int idxSize = maze.GetLevelSize(i);
             float ratio = Mathf.Abs(idxSize - focusSize) / 3f;
             float size = Mathf.Lerp(0.1f, 0.05f, ratio);
             Color color = Color.black;
@@ -325,7 +323,7 @@ public class MazeVisualizer : MonoBehaviour
                     }
                 }
             }
-            color = Color.Lerp(Color.blue, Color.black, ratio);
+            color = Color.Lerp(Color.red, Color.black, ratio);
             color.a = Mathf.Lerp(1f, 0.2f, ratio);
             Gizmos.color = color;
             if (seeMaze) {
@@ -339,23 +337,23 @@ public class MazeVisualizer : MonoBehaviour
             
         }
         //// Compass
-        if (seeCompass) {
-            Color[] colors = new Color[] {Color.red, Color.green, Color.blue, Color.yellow, Color.cyan, Color.magenta};
-            for (int i = 0; i < maze.faces.Length; i++) {
-                Vector3 up = maze.transform.TransformPoint(maze.faces[i] * Vector3.up * 2);
-                Vector3 north = maze.transform.TransformPoint(maze.faces[i] * Vector3.forward);
-                Vector3 east = maze.transform.TransformPoint(maze.faces[i] * Vector3.right);
-                Gizmos.color = colors[0];
-                Gizmos.DrawLine(up, up - north);
-                Gizmos.color = colors[1];
-                Gizmos.DrawLine(up, up - east);
-                Gizmos.color = colors[2];
-                Gizmos.DrawLine(up, up + north);
-                Gizmos.color = colors[3];
-                Gizmos.DrawLine(up, up + east);
-                Gizmos.color = colors[4];
-                Gizmos.DrawLine(up, up + up / 4);
-            }
-        }
+        // if (seeCompass) {
+        //     Color[] colors = new Color[] {Color.red, Color.green, Color.blue, Color.yellow, Color.cyan, Color.magenta};
+        //     for (int i = 0; i < maze.faces.Length; i++) {
+        //         Vector3 up = maze.transform.TransformPoint(maze.faces[i] * Vector3.up * 2);
+        //         Vector3 north = maze.transform.TransformPoint(maze.faces[i] * Vector3.forward);
+        //         Vector3 east = maze.transform.TransformPoint(maze.faces[i] * Vector3.right);
+        //         Gizmos.color = colors[0];
+        //         Gizmos.DrawLine(up, up - north);
+        //         Gizmos.color = colors[1];
+        //         Gizmos.DrawLine(up, up - east);
+        //         Gizmos.color = colors[2];
+        //         Gizmos.DrawLine(up, up + north);
+        //         Gizmos.color = colors[3];
+        //         Gizmos.DrawLine(up, up + east);
+        //         Gizmos.color = colors[4];
+        //         Gizmos.DrawLine(up, up + up / 4);
+        //     }
+        // }
     }
 }

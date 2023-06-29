@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class MultilevelTetraMaze : MultilevelMaze
+public class MultilevelTetraMaze : MultilevelSolidMaze
 {
     // static float angle = 70.5287793655093f; //Mathf.Acos(1/3f) * Mathf.Rad2Deg;
     // 109.4712206344907

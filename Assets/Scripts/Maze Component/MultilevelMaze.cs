@@ -4,55 +4,30 @@ using UnityEngine;
 
 public abstract class MultilevelMaze : MonoBehaviour
 {
-    public struct Coordinate {
-        public int x;
-        public int y;
-        public int plane;
-        public int levelSize;
-
-        public override string ToString() {
-            return "(" + x + ", " + y + ", " + plane + ", " + levelSize + ")";
-        }
-    }
-
-    abstract public Quaternion[] faces { get; }
-
-    abstract public List<List<int>> faceAdj { get; }
-    abstract public int nCases { get; }
 
     public int entryIndex { get; protected set; } = -1;
-
     public int maxSize = 5;
-    public int nPlanes { get { return faces.Length; } }
+    abstract public int nCases { get; }
     public List<Vector3> points = new List<Vector3>();
     public Dictionary<int, List<int>> graph { get; protected set; } = new Dictionary<int, List<int>>();
     public Dictionary<int, HashSet<int>> maze { get; protected set; } = new Dictionary<int, HashSet<int>>();
 
-    public Quaternion GetRotation(int index) {
-        return faces[index % nPlanes];
-    }
+    abstract public Vector3 GetNormal(int index);
+    abstract public Vector3 GetNorth(int index);
 
-    abstract public int FaceSize(int levelSize);
+    abstract public int GetDepth(int index);
+    abstract public int GetLevelSize(int index);
 
-    public int LevelSize(int levelSize) {
-        return FaceSize(levelSize) * nPlanes;
-    }
-
+    abstract public int LevelSize(int levelSize);
     abstract public int Level2Stride(int levelSize);
-
-    abstract public int Coord2Idx(int x, int y, int plane, int levelSize);
-
-    abstract public int Coord2Idx(Coordinate coord);
-
-    abstract public Coordinate Idx2Coord(int idx, int sizeCase);
-
+    
     [ContextMenu("Generate")]
     public void Generate() {
         Clear();
         GenerateGraph();
         GenerateMaze();
     }
-
+    
     public void Clear() {
         points.Clear();
         graph.Clear();
@@ -110,7 +85,7 @@ public abstract class MultilevelMaze : MonoBehaviour
                     current = stack.Pop();
                 }
                 else {
-                    Debug.LogError("Error: premature break at " + Idx2Coord(current, size));
+                    Debug.LogError("Error: premature break at " + current);
                     break;
                 }
             }
@@ -144,9 +119,25 @@ public abstract class MultilevelMaze : MonoBehaviour
                 current = stack.Pop();
             }
             else {
-                Debug.LogError("Error: premature break at " + Idx2Coord(current, maxSize));
+                Debug.LogError("Error: premature break at " + current);
                 break;
             }
         }
     }
+
+    [ContextMenu("Average neighbor Distance")]
+    public void AverageNeighborDistance() {
+        float sum = 0;
+        int count = 0;
+        foreach (int key in graph.Keys) {
+            foreach (int neighbor in graph[key]) {
+                if (neighbor != -1) {
+                    sum += Vector3.Distance(points[key], points[neighbor]);
+                    count++;
+                }
+            }
+        }
+        Debug.Log("Average neighbor distance: " + sum / count);
+    }
+
 }

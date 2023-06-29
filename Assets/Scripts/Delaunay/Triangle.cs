@@ -5,7 +5,7 @@ public class Triangle {
     private Vector2 CircumCentre;
     private Delaunay delaunay;
     private float CircumRadius;
-    public int[] vertices { get; } = new int[3];
+    public List<int> vertices { get; } = new List<int>(3){-1, -1, -1};
     public Vector2 circumCentre { get { return CircumCentre; } }
     public float circumRadius { get { return CircumRadius; } }
 
@@ -18,5 +18,9 @@ public class Triangle {
 
         CircumCentre = delaunay.FindCircumcenter(a, b, c);
         CircumRadius = delaunay.Distance(CircumCentre, a);
+    }
+
+    public override string ToString() {
+        return "{" + vertices[0] + ", " + vertices[1] + ", " + vertices[2] + "}";
     }
 }

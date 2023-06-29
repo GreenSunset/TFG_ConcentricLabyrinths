@@ -121,13 +121,11 @@ public class PrototypeNavigator : MonoBehaviour
             int swap = currentPointIndex;
             currentPointIndex = nextPointIndex;
             nextPointIndex = swap;
-            Debug.Log("Swapped");
         }
         if (current2nextRatio < 0) {
             progress = -current2nextRatio;
             current2nextRatio = 0;
             nextPointIndex = -1;
-            Debug.Log("Reset");
         } else {
             progress = 0;
         }
@@ -202,7 +200,7 @@ public class PrototypeNavigator : MonoBehaviour
         } else {
             transform.position = Vector3.Lerp(maze.transform.TransformPoint(maze.points[currentPointIndex]), maze.transform.TransformPoint(maze.points[nextPointIndex]), current2nextRatio);
         }
-        maze.GetComponent<MazeVisualizer>().currentLevel = maze.Idx2Coord(currentPointIndex, maze.maxSize).levelSize / maze.nCases;
+        maze.GetComponent<MazeVisualizer>().currentLevel = maze.GetDepth(currentPointIndex);
         // Debug Movement
         // if (target == -1 || target == currentPointIndex) {
         //     target = new List<int>(maze.maze[currentPointIndex])[Random.Range(0, maze.maze[currentPointIndex].Count)];

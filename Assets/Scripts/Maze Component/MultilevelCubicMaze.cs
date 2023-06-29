@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class MultilevelCubicMaze : MultilevelMaze
+public class MultilevelCubicMaze : MultilevelSolidMaze
 {
     override public Quaternion[] faces { get; } = new Quaternion[] {
         Quaternion.Euler(0,90,0),
