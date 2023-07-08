@@ -20,10 +20,7 @@ public class PrototypeController : MonoBehaviour
         if (navigator == null || lockControls) return;
         int? movement = null;
         Vector3 input = InputMapper.MainAxis();
-        float vertical = InputMapper.DPadV();
-        if (vertical > 0) {
-        } else if (vertical < 0) {
-        } else if (input.magnitude > .2) {
+        if (input.magnitude > .2) {
             input = PrototypeObserver.main.transform.TransformVector(input);
             // input = navigator.maze.faces[navigator.currentPointIndex % navigator.maze.nPlanes] * input;
             Debug.DrawLine(transform.position, transform.position + input, Color.red);

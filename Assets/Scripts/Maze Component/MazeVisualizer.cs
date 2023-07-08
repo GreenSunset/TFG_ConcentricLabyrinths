@@ -22,9 +22,13 @@ public class MazeVisualizer : MonoBehaviour
     // Start is called before the first frame update
     void Awake()
     {
+        levels.Clear();
         maze = GetComponent<MultilevelMaze>();
         maze.Generate();
-        levels.Clear();
+        currentLevel = (maze.maxSize - 1) / maze.nCases;
+        intCurrentLevel = Mathf.FloorToInt(currentLevel);
+        lastLevel = currentLevel;
+        GenerateMesh(intCurrentLevel);
     }
 
     void Update() {
@@ -39,36 +43,32 @@ public class MazeVisualizer : MonoBehaviour
                 levels[intCurrentLevel].GetComponent<MeshRenderer>().material.color = new Color(1, 1, 1, 1);
             }
         }
-        if (lastLevel != currentLevel) {
-            lastLevel = currentLevel;
-            int otherLevel = intCurrentLevel - 1;
-            float alpha = 1 - (currentLevel - intCurrentLevel);
-            if (alpha < .9f) {
-                alpha = 1 - alpha;
-                otherLevel = intCurrentLevel + 1;
-            } else {
-                alpha = 1;
-            }
-            GenerateMesh(otherLevel);
-            if (levels.ContainsKey(otherLevel)) {
-                levels[otherLevel].SetActive(true);
-                levels[otherLevel].GetComponent<MeshRenderer>().material.color = new Color(1, 1, 1, alpha);
-            }
-        }
+        // if (lastLevel != currentLevel) {
+        //     lastLevel = currentLevel;
+        //     int otherLevel = intCurrentLevel - 1;
+        //     float alpha = 1 - (currentLevel - intCurrentLevel);
+        //     if (alpha < .9f) {
+        //         alpha = 1 - alpha;
+        //         otherLevel = intCurrentLevel + 1;
+        //     } else {
+        //         alpha = 1;
+        //     }
+        //     GenerateMesh(otherLevel);
+        //     if (levels.ContainsKey(otherLevel)) {
+        //         levels[otherLevel].SetActive(true);
+        //         levels[otherLevel].GetComponent<MeshRenderer>().material.color = new Color(1, 1, 1, alpha);
+        //     }
+        // }
     }
 
     // [ContextMenu("Generate Mesh")]
     void GenerateMesh(int level = -1) {
-        if (maze == null || levels.ContainsKey(level)) {
+        if (maze == null || levels.ContainsKey(level) || level < 0 || level > (maze.maxSize - 1) / maze.nCases) {
             return;
         }
-        int startSize = maze.maxSize % maze.nCases == 0 ? maze.nCases : maze.maxSize % maze.nCases;
-        int currentSize = maze.nCases * level + startSize;
-        if (level < 0 || currentSize > maze.maxSize) {
-            return;
-        }
-        int startIndex = maze.Level2Stride(currentSize);
-        int endIndex = maze.Level2Stride(currentSize + maze.nCases);
+        Debug.Log("Generating mesh for level " + level);
+        int startIndex = maze.Level2Stride(level);
+        int endIndex = maze.Level2Stride(level + 1);
         Dictionary<int, int> vertexStart = new Dictionary<int, int>();
         List<Vector3> vertices = new List<Vector3>();
         List<GameObject> lights = new List<GameObject>();
@@ -287,7 +287,6 @@ public class MazeVisualizer : MonoBehaviour
         mesh.vertices = vertices.ToArray();
         mesh.triangles = triangles.ToArray();
         mesh.RecalculateNormals();
-        // meshes[level] = mesh;
         levels[level] = new GameObject("Level " + level, typeof(MeshFilter), typeof(MeshRenderer));
         levels[level].transform.parent = transform;
         foreach (GameObject light in lights) {
@@ -298,21 +297,21 @@ public class MazeVisualizer : MonoBehaviour
     }
 
     void OnDrawGizmos() {
+        if (!seeGraph && !seeMaze && !seePoints) {
+            return;
+        }
         if (maze == null) {
             return;
         }
-        int startSize = maze.maxSize % maze.nCases == 0 ? maze.nCases : maze.maxSize % maze.nCases;
-        float focusSize = maze.nCases * currentLevel + startSize;
-        int currentSize = maze.nCases * Mathf.FloorToInt(currentLevel) + startSize;
-        int startIndex = maze.Level2Stride(currentSize);
-        int endIndex = maze.Level2Stride(currentSize + maze.nCases);
+        int startIndex = maze.Level2Stride(Mathf.FloorToInt(currentLevel));
+        int endIndex = maze.Level2Stride(Mathf.FloorToInt(currentLevel) + 1);
         int nPoints = maze.points.Count;
         for (int i = 0; i < nPoints; i++) {
-            int idxSize = maze.GetLevelSize(i);
-            float ratio = Mathf.Abs(idxSize - focusSize) / 3f;
+            int idxLevel = maze.GetLevel(i);
+            float ratio = Mathf.Abs(idxLevel - currentLevel) / 1.5f;
             float size = Mathf.Lerp(0.1f, 0.05f, ratio);
             Color color = Color.black;
-            color.a = Mathf.Lerp(1f, 0.2f, ratio);
+            color.a = Mathf.Lerp(1f, 0f, ratio);
             Gizmos.color = color;
             if (seePoints) Gizmos.DrawSphere(maze.transform.TransformPoint(maze.points[i]), size);
             if (seeGraph) {
@@ -336,24 +335,24 @@ public class MazeVisualizer : MonoBehaviour
             }
             
         }
-        //// Compass
-        // if (seeCompass) {
-        //     Color[] colors = new Color[] {Color.red, Color.green, Color.blue, Color.yellow, Color.cyan, Color.magenta};
-        //     for (int i = 0; i < maze.faces.Length; i++) {
-        //         Vector3 up = maze.transform.TransformPoint(maze.faces[i] * Vector3.up * 2);
-        //         Vector3 north = maze.transform.TransformPoint(maze.faces[i] * Vector3.forward);
-        //         Vector3 east = maze.transform.TransformPoint(maze.faces[i] * Vector3.right);
-        //         Gizmos.color = colors[0];
-        //         Gizmos.DrawLine(up, up - north);
-        //         Gizmos.color = colors[1];
-        //         Gizmos.DrawLine(up, up - east);
-        //         Gizmos.color = colors[2];
-        //         Gizmos.DrawLine(up, up + north);
-        //         Gizmos.color = colors[3];
-        //         Gizmos.DrawLine(up, up + east);
-        //         Gizmos.color = colors[4];
-        //         Gizmos.DrawLine(up, up + up / 4);
-        //     }
-        // }
+        if (seeCompass && maze.GetType() == typeof(MultilevelSolidMaze)) {
+            MultilevelSolidMaze solidMaze = (MultilevelSolidMaze)maze;
+            Color[] colors = new Color[] {Color.red, Color.green, Color.blue, Color.yellow, Color.cyan, Color.magenta};
+            for (int i = 0; i < solidMaze.faces.Length; i++) {
+                Vector3 up = solidMaze.transform.TransformPoint(solidMaze.faces[i] * Vector3.up * 2);
+                Vector3 north = solidMaze.transform.TransformPoint(solidMaze.faces[i] * Vector3.forward);
+                Vector3 east = solidMaze.transform.TransformPoint(solidMaze.faces[i] * Vector3.right);
+                Gizmos.color = colors[0];
+                Gizmos.DrawLine(up, up - north);
+                Gizmos.color = colors[1];
+                Gizmos.DrawLine(up, up - east);
+                Gizmos.color = colors[2];
+                Gizmos.DrawLine(up, up + north);
+                Gizmos.color = colors[3];
+                Gizmos.DrawLine(up, up + east);
+                Gizmos.color = colors[4];
+                Gizmos.DrawLine(up, up + up / 4);
+            }
+        }
     }
 }

@@ -20,8 +20,8 @@ public class MultilevelTetraMaze : MultilevelSolidMaze
         new List<int> {1,-1,0,2},
     };
 
-    virtual protected float distanceFromCenter { get; } = 1 / Mathf.Sqrt(24f);
-    virtual protected float distanceAdd { get; } = 3;
+    override protected float distanceFromCenter { get; } = 1 / Mathf.Sqrt(24f);
+    override protected float distanceAdd { get; } = 3;
     
     override public int nCases { get; } = 3;
 
@@ -29,41 +29,38 @@ public class MultilevelTetraMaze : MultilevelSolidMaze
         return levelSize * (levelSize + 1) / 2;
     }
 
-    override public int Level2Stride(int levelSize) {
+    override public int Level2Stride(int level) {
+        int minLevelSize = maxSize % nCases;
+        if (minLevelSize == 0) minLevelSize = nCases;
+        int levelSize = level * nCases + minLevelSize;
         float squareSize = levelSize * levelSize;
         float cubeSize = squareSize * levelSize;
         return (int)((cubeSize - 3 * squareSize + 2 * (levelSize % nCases)) / 18) * nPlanes;
     }
 
-    override public int Coord2Idx(int x, int y, int plane, int levelSize) {
+    override public int Coord2Idx(int x, int y, int plane, int level) {
         if (x > y) {
             Debug.LogError("x can't be more than y in triangle");
         }
-        int levelStride = Level2Stride(levelSize);
+        int levelStride = Level2Stride(level);
         int localIdx = nPlanes * (x + FaceSize(y)) + plane;
         return levelStride + localIdx;
     }
 
-    override public int Coord2Idx(Coordinate coord) {
-        if (coord.x > coord.y) {
-            Debug.LogError("x can't be more than y in triangle");
-        }
-        int levelStride = Level2Stride(coord.levelSize);
-        int localIdx = nPlanes * (coord.x + FaceSize(coord.y)) + coord.plane;
-        return levelStride + localIdx;
-    }
-
-    override public Coordinate Idx2Coord(int idx, int sizeCase) {
-        int levelSize = sizeCase % nCases;
+    override public Coordinate Idx2Coord(int idx) {
+        int levelSize = maxSize % nCases;
+        if (levelSize == 0) levelSize = nCases;
         int levelStride = 0;
-        int sum = LevelSize(levelSize);
+        int level = 0;
+        int sum = LevelSize(level);
         while (levelStride + sum <= idx) {
             levelStride += sum;
             levelSize += nCases;
-            sum = LevelSize(levelSize);
+            level++;
+            sum = LevelSize(level);
         }
-        if (levelStride != Level2Stride(levelSize)) {
-            Debug.Log("Error: " + levelStride + " != " + Level2Stride(levelSize));
+        if (levelStride != Level2Stride(level)) {
+            Debug.Log("Error: " + levelStride + " != " + Level2Stride(level));
         }
         idx -= levelStride;
         int plane = idx % nPlanes;
@@ -71,7 +68,7 @@ public class MultilevelTetraMaze : MultilevelSolidMaze
         int y = 0;
         for (y = 0; FaceSize(y + 1) <= idx; y++);
         int x = idx - FaceSize(y);
-        return new Coordinate { x = x, y = y, plane = plane, levelSize = levelSize };
+        return new Coordinate { x = x, y = y, plane = plane, level = level };
     }
 
 
@@ -81,9 +78,10 @@ public class MultilevelTetraMaze : MultilevelSolidMaze
         }
         int stride = 0;
         float sqrt3 = Mathf.Sqrt(3);
-        for (int size = maxSize % nCases; size <= maxSize; size += nCases) {
+        int minSize = maxSize % nCases;
+        if (minSize == 0) minSize = nCases;
+        for (int size = minSize; size <= maxSize; size += nCases) {
             // Calculate plane distance
-            // Calculate offset distance
             float planeDistance = (size - 1 + distanceAdd) * distanceFromCenter;
             for (int iInd = 0; iInd < size; iInd++) {
                 float x = iInd * sqrt3 / 2f - (size - 1) / sqrt3;
@@ -113,10 +111,10 @@ public class MultilevelTetraMaze : MultilevelSolidMaze
                         }
                         // Add interlevel adjacencies (check lowest or highest level)
                         if (size < maxSize) {
-                            graph[points.Count][6] = Coord2Idx(jInd + 1, iInd + 2, plane, size + 3);
+                            graph[points.Count][6] = Coord2Idx(jInd + 1, iInd + 2, plane, (size - 1) / nCases + 1);
                         }
                         if (size > 3 && notEdgeE && notEdgeS && notEdgeW) {
-                            graph[points.Count][7] = Coord2Idx(jInd - 1, iInd - 2, plane, size - 3);
+                            graph[points.Count][7] = Coord2Idx(jInd - 1, iInd - 2, plane, (size - 1) / nCases - 1);
                         }
                         // Add Point to points list
                         points.Add(faces[plane] * new Vector3(x, planeDistance, z));
@@ -144,7 +142,7 @@ public class MultilevelTetraMaze : MultilevelSolidMaze
                     }
                 }
             }
-            stride += LevelSize(size);
+            stride += LevelSize((size - 1) / nCases);
         }
     }
 }

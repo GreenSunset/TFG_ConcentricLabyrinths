@@ -18,21 +18,22 @@ public class MultilevelSphericMaze : MultilevelMaze
         throw new System.NotImplementedException();
     }
 
-    override public int GetDepth(int index) {
-        return Mathf.RoundToInt(points[index].magnitude);
+    override public int GetLevel(int index) {
+        int levelSize = Mathf.RoundToInt(points[index].magnitude);
+        return (levelSize - 1) / nCases;
     }
 
-    override public int GetLevelSize(int index) {
-        return 0;
-    }
 
-    override public int LevelSize(int levelSize) {
+    override public int LevelSize(int level) {
+        int minLevelSize = maxSize % nCases;
+        if (minLevelSize == 0) minLevelSize = nCases;
+        int levelSize = minLevelSize + level * nCases;
         return Mathf.RoundToInt(4* Mathf.PI * levelSize * levelSize);
     }
 
-    override public int Level2Stride(int levelSize) {
+    override public int Level2Stride(int level) {
         int size = 0;
-        for (int i = levelSize % nCases; i < levelSize; i += nCases) {
+        for (int i = 0; i < level; i ++) {
             size += LevelSize(i);
         }
         return size;
@@ -41,10 +42,13 @@ public class MultilevelSphericMaze : MultilevelMaze
     protected override void GenerateGraph()
     {
         int stride = 0;
-        for (int size = 1; size <= maxSize; size += nCases) {
+        int minLevelSize = maxSize % nCases;
+        if (minLevelSize == 0) minLevelSize = nCases;
+        for (int size = minLevelSize; size <= maxSize; size += nCases) {
             int prevStride = stride;
             stride = points.Count;
-            int numPoints = LevelSize(size);
+            int numPoints = LevelSize((size - 1) / nCases);
+            Debug.Log("Size: " + size + " numPoints: " + numPoints);
             float gRatio = (1+Mathf.Sqrt(5))/2;
             // float epsilon = 3.5f;
             List<Vector2> proyected = new List<Vector2>();
@@ -108,9 +112,9 @@ public class MultilevelSphericMaze : MultilevelMaze
         }
     }
 
-    // protected override void GenerateMaze()
-    // {
-    //     GenerateMazeUnrestricted();
-    // }
+    protected override void GenerateMaze()
+    {
+        GenerateMazeUnrestricted();
+    }
 
 }

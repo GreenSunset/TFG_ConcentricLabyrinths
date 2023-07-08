@@ -37,7 +37,7 @@ public class PrototypeObserver : MonoBehaviour
         }
 
         // Look at target
-        float rotation = InputMapper.AxisZ();
+        float rotation = InputMapper.DPadV();
         if (Mathf.Abs(rotation) > .2) {
             transform.RotateAround(targetPos, normal, rotation * Time.deltaTime * 100);
         }

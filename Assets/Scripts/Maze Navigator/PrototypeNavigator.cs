@@ -200,7 +200,12 @@ public class PrototypeNavigator : MonoBehaviour
         } else {
             transform.position = Vector3.Lerp(maze.transform.TransformPoint(maze.points[currentPointIndex]), maze.transform.TransformPoint(maze.points[nextPointIndex]), current2nextRatio);
         }
-        maze.GetComponent<MazeVisualizer>().currentLevel = maze.GetDepth(currentPointIndex);
+        maze.GetComponent<MazeVisualizer>().currentLevel = maze.GetLevel(currentPointIndex);
+        if (nextPointIndex == -1) {
+            transform.up = maze.GetNormal(currentPointIndex);
+        } else {
+            transform.up = Vector3.Lerp(maze.GetNormal(currentPointIndex), maze.GetNormal(nextPointIndex), current2nextRatio);
+        }
         // Debug Movement
         // if (target == -1 || target == currentPointIndex) {
         //     target = new List<int>(maze.maze[currentPointIndex])[Random.Range(0, maze.maze[currentPointIndex].Count)];

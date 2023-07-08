@@ -15,8 +15,7 @@ public abstract class MultilevelMaze : MonoBehaviour
     abstract public Vector3 GetNormal(int index);
     abstract public Vector3 GetNorth(int index);
 
-    abstract public int GetDepth(int index);
-    abstract public int GetLevelSize(int index);
+    abstract public int GetLevel(int index);
 
     abstract public int LevelSize(int levelSize);
     abstract public int Level2Stride(int levelSize);
@@ -43,13 +42,13 @@ public abstract class MultilevelMaze : MonoBehaviour
             return;
         }
         HashSet<int> visited = new HashSet<int>();
-        int size = maxSize;
+        int level = (maxSize - 1) / nCases;
         int i = 0;
         int accounted = 0;
         while (visited.Count < points.Count) {
             i++;
-            if (size < 1) {
-                Debug.LogError("Error: size < 1");
+            if (level < 0) {
+                Debug.LogError("Error: level < 1");
                 break;
             }
             if (i > 1000) {
@@ -57,8 +56,7 @@ public abstract class MultilevelMaze : MonoBehaviour
                 break;
             }
             Stack<int> stack = new Stack<int>();
-            int current = Random.Range(Level2Stride(size), points.Count - visited.Count);
-            // Debug.Log(current);
+            int current = Random.Range(Level2Stride(level), points.Count - visited.Count);
             int entry = graph[current][graph[current].Count - 2];
             if (entry != -1) {
                 maze[entry].Add(current);
@@ -68,7 +66,7 @@ public abstract class MultilevelMaze : MonoBehaviour
             }
             accounted = visited.Count;
             visited.Add(current);
-            while ((visited.Count - accounted) < LevelSize(size)) {
+            while ((visited.Count - accounted) < LevelSize(level)) {
                 List<int> neighbors = graph[current].GetRange(0, graph[current].Count - 2);
                 neighbors.RemoveAll(x => visited.Contains(x) || x == -1);
                 if (neighbors.Count > 0) {
@@ -89,7 +87,7 @@ public abstract class MultilevelMaze : MonoBehaviour
                     break;
                 }
             }
-            size -= nCases;
+            level -= 1;
         }
     }
 
@@ -98,6 +96,7 @@ public abstract class MultilevelMaze : MonoBehaviour
         if (graph.Count == 0) {
             return;
         }
+        entryIndex = Random.Range(0, points.Count);
         HashSet<int> visited = new HashSet<int>();
         Stack<int> stack = new Stack<int>();
         int current = Random.Range(0, points.Count);
@@ -140,4 +139,28 @@ public abstract class MultilevelMaze : MonoBehaviour
         Debug.Log("Average neighbor distance: " + sum / count);
     }
 
+    [ContextMenu("Check Integrity")]
+    public void CheckMaze() {
+        for(int i = 0; i < points.Count; i++) {
+            List<int> adj = graph[i];
+            for(int j = 0; j < adj.Count; j++) {
+                if (adj[j] >= points.Count || adj[j] < -1) {
+                    Debug.LogError("Invalid adjacency: " + adj[j] + " for " + i);
+                } else if (adj[j] != -1 && !graph[adj[j]].Contains(i)) {
+                    Debug.LogError("Graph is not symmetric: " + adj[j] + " for " + i);
+                }
+            }
+        }
+    }
+
+    [ContextMenu("Test")]
+    public void Test() {
+        int totalSize = 0;
+        for(int i = 0; i < 100; i++) {
+            int size = LevelSize(i);
+            int predictedStride = Level2Stride(i);
+            Debug.Log("Level " + i + " size " + size + "; stride " + predictedStride + " (should be " + totalSize + ")");
+            totalSize += size;
+        }
+    }
 }
