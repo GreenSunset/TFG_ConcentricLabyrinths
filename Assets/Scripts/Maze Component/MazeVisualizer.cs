@@ -83,10 +83,11 @@ public class MazeVisualizer : MonoBehaviour
                 GameObject light = new GameObject("Light " + i, typeof(Light));
                 Light l = light.GetComponent<Light>();
                 l.type = LightType.Spot;
-                l.spotAngle = 60;
-                l.range = 2;
-                light.transform.position = maze.points[i] + normal * 0.5f;
-                light.transform.up = normal;
+                l.spotAngle = 20;
+                l.range = 1.4f;
+                l.intensity = 5f;
+                light.transform.position = maze.points[i] + normal * 1f;
+                light.transform.forward = -normal;
                 lights.Add(light);
 
             }
