@@ -1,0 +1,10 @@
+@startuml
+class MultilevelOctaMaze {
+    <<override>> # distanceFromCenter : float <<get>>
+    <<override>> # distanceAdd : float <<get>>
+}
+class "List`1"<T> {
+}
+MultilevelTetraMaze <|-- MultilevelOctaMaze
+MultilevelOctaMaze o-> "faceAdj<List<int>>" "List`1"
+@enduml

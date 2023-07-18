@@ -6,12 +6,13 @@ public class ObserverController : MonoBehaviour
 {
     static public ObserverController main { get; private set; }
     public MazeNavigator target;
-    public Maze maze;
+    public MultilevelMaze maze;
     private Camera cam;
     private Vector2 currentTilt = Vector2.zero;
+    public float currentZoom = 0;
     [SerializeField] private float tiltSpeed = 10;
 
-    void Start()
+    void Awake()
     {
         SetMain();
         
@@ -28,16 +29,21 @@ public class ObserverController : MonoBehaviour
         if (target == null || maze == null) return;
         Vector3 targetPos = target.transform.position;
         Vector3 centerPos = maze.transform.position;
-        Vector3 normal = Vector3.Lerp(maze.GetNormal(target.currentPointIndex), maze.GetNormal(target.nextPointIndex), target.current2nextRatio);
+        Vector3 normal;
+        if (target.nextPointIndex < 0) {
+            normal = maze.GetNormal(target.currentPointIndex);
+        } else {
+            normal = Vector3.Lerp(maze.GetNormal(target.currentPointIndex), maze.GetNormal(target.nextPointIndex), target.current2nextRatio);
+        }
 
         // Look at target
-        float rotation = InputMapper.AxisZ();
+        float rotation = InputMapper.DPadV();
         if (Mathf.Abs(rotation) > .2) {
             transform.RotateAround(targetPos, normal, rotation * Time.deltaTime * 100);
         }
 
         // Follow target
-        float distance = (maze.size + 1) / 2;
+        float distance = Vector3.Distance(target.transform.position, maze.transform.position) + 3;
         transform.position = targetPos + normal.normalized * distance;
         Vector3 axis = Vector3.Cross(transform.forward, -normal);
         float angle = Vector3.Angle(transform.forward, -normal);
@@ -62,6 +68,11 @@ public class ObserverController : MonoBehaviour
         cam.transform.RotateAround(targetPos, transform.right, currentTilt.y * 80);
 
         // Camera zoom
+        float zoom = InputMapper.AxisW();
+        if (Mathf.Abs(zoom) > .2) {
+            currentZoom = Mathf.Clamp(currentZoom + zoom * Time.deltaTime, -1, 1);
+        }
+        cam.fieldOfView = currentZoom * 30 + 60;
 
     }
 }

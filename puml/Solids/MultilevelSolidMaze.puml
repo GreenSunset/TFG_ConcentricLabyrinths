@@ -1,0 +1,27 @@
+@startuml
+abstract class MultilevelSolidMaze {
+    + nPlanes : int <<get>>
+    {abstract} # distanceFromCenter : float <<get>>
+    {abstract} # distanceAdd : float <<get>>
+    <<override>> + GetNormal(index:int) : Vector3
+    <<override>> + GetNorth(index:int) : Vector3
+    <<override>> + GetLevel(index:int) : int
+    {abstract} + FaceSize(levelSize:int) : int
+    <<override>> + LevelSize(level:int) : int
+    {abstract} + Coord2Idx(x:int, y:int, plane:int, level:int) : int
+    {abstract} + Idx2Coord(idx:int) : Coordinate
+    + TestCoordinate() : void
+}
+class Coordinate <<struct>> {
+    + x : int
+    + y : int
+    + plane : int
+    + level : int
+    + <<override>> ToString() : string
+}
+class "List`1"<T> {
+}
+MultilevelMaze <|-- MultilevelSolidMaze
+MultilevelSolidMaze --> "faceAdj<List<int>>" "List`1"
+MultilevelSolidMaze +-- Coordinate
+@enduml

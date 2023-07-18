@@ -19,14 +19,16 @@ public class MazePlayerController : MonoBehaviour
     {
         if (navigator == null || lockControls) return;
         int? movement = null;
-        Vector3 input = InputMapper.MainAxis2D();
+        Vector3 input = InputMapper.MainAxis();
         if (input.magnitude > .2) {
             input = ObserverController.main.transform.TransformVector(input);
+            // input = navigator.maze.faces[navigator.currentPointIndex % navigator.maze.nPlanes] * input;
             Debug.DrawLine(transform.position, transform.position + input, Color.red);
             float potency = 0;
             movement = navigator.NeighbourInDirection(input, ref potency);
             potency = Mathf.Cos(Mathf.Deg2Rad * potency);
             if (movement != null) {
+                // Debug.Log("Moving towards " + movement + " with potency " + potency);
                 navigator.MoveTowards((int) movement, Time.deltaTime * input.magnitude * potency * speed);
             }
         }

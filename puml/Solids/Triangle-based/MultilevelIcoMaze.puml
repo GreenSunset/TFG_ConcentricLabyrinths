@@ -1,0 +1,10 @@
+@startuml
+class MultilevelIcoMaze {
+    <<override>> # distanceFromCenter : float <<get>>
+    <<override>> # distanceAdd : float <<get>>
+}
+class "List`1"<T> {
+}
+MultilevelTetraMaze <|-- MultilevelIcoMaze
+MultilevelIcoMaze o-> "faceAdj<List<int>>" "List`1"
+@enduml

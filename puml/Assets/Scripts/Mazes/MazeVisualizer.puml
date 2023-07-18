@@ -1,0 +1,21 @@
+@startuml
+class MazeVisualizer {
+    + seeCompass : bool = false
+    + seePoints : bool = false
+    + seeGraph : bool = false
+    + seeMaze : bool = true
+    + currentLevel : float = 0
+    + intCurrentLevel : int = 0
+    - lastLevel : float = 0
+    - Awake() : void
+    - Update() : void
+    - GenerateMesh(level:int) : void
+    - OnDrawGizmos() : void
+}
+class "Dictionary`2"<T1,T2> {
+}
+MonoBehaviour <|-- MazeVisualizer
+MazeVisualizer --> "maze" MultilevelMaze
+MazeVisualizer --> "material" Material
+MazeVisualizer o-> "levels<int,GameObject>" "Dictionary`2"
+@enduml

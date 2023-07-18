@@ -1,0 +1,32 @@
+@startuml
+class Delaunay {
+    + stride : int = 0
+    + Delaunay(maze:MultilevelSphericMaze, points:List<Vector2>, stride:int)
+    + Triangulate() : void
+    + Flip(a:int, b:int, common1:int, common2:int) : void
+    + AddToHull(point:int) : void
+    + IsLeftOf(point:Vector2, a:int, b:int) : bool
+    + Distance2(a:int, b:Vector2) : float
+    + Distance2(a:Vector2, b:int) : float
+    + Distance2(a:int, b:int) : float
+    + {static} Distance2(a:Vector2, b:Vector2) : float
+    + Distance(a:int, b:Vector2) : float
+    + Distance(a:Vector2, b:int) : float
+    + Distance(a:int, b:int) : float
+    + {static} Distance(a:Vector2, b:Vector2) : float
+    + IsCounterClockwise(a:int, b:int, c:int) : bool
+    + {static} IsCounterClockwise(a:Vector2, b:Vector2, c:Vector2) : bool
+    + FindCircumcenter(a:int, b:int, c:int) : Vector2
+    + {static} FindCircumcenter(a:Vector2, b:Vector2, c:Vector2) : Vector2
+    + {static} ContainsEdge(triangle:Triangle, edge:(int, int)) : bool
+}
+class "List`1"<T> {
+}
+class "Dictionary`2"<T1,T2> {
+}
+Delaunay --> "maze" MultilevelSphericMaze
+Delaunay --> "points<Vector2>" "List`1"
+Delaunay --> "triangles<Triangle>" "List`1"
+Delaunay --> "vertTriangles<int,HashSet<int>>" "Dictionary`2"
+Delaunay --> "hull<int>" "List`1"
+@enduml

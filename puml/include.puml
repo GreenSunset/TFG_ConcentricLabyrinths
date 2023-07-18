@@ -1,0 +1,121 @@
+@startuml
+class MazeVisualizer {
+    + currentLevel : float = 0
+    - Awake() : void
+    - Update() : void
+    - GenerateMesh(level:int) : void
+    - OnDrawGizmos() : void
+}
+MonoBehaviour <|-- MazeVisualizer
+MazeVisualizer --> "maze" MultilevelMaze
+abstract class MultilevelMaze {
+    + points : List<Vector3> <<get>> <<protected set>>
+    + graph : Dictionary<int, List<int>> <<get>> <<protected set>>
+    + maze : Dictionary<int, HashSet<int>> <<get>> <<protected set>>
+    + entryIndex : int <<get>> <<protected set>>
+    + maxSize : int
+    {abstract} + nCases : int <<get>>
+    {abstract} + GetNormal(index:int) : Vector3
+    {abstract} + GetNorth(index:int) : Vector3
+    {abstract} + GetLevel(index:int) : int
+    {abstract} + LevelSize(levelSize:int) : int
+    {abstract} + Level2Stride(levelSize:int) : int
+    + Generate() : void
+    + Clear() : void
+    {abstract} # GenerateGraph() : void
+    <<virtual>> # GenerateMaze() : void
+    <<virtual>> # GenerateMazeUnrestricted() : void
+}
+MonoBehaviour <|-- MultilevelMaze
+class MultilevelCubicMaze {
+    <<override>> + faces : Quaternion[] <<get>> = new Quaternion[6]
+    <<override>> + faceAdj : int[,] <<get>> = new int[6, 4]
+    <<override>> # distanceFromCenter : float <<get>> = .5f
+    <<override>> # distanceAdd : float <<get>> = Mathf.Sqrt(2f)
+    <<override>> + nCases : int <<get>> = 2
+    <<override>> + FaceSize(levelSize:int) : int
+    <<override>> + Level2Stride(level:int) : int
+    <<override>> # GenerateGraph() : void
+}
+MultilevelSolidMaze <|-- MultilevelCubicMaze
+class MultilevelD12Maze {
+    <<override>> + faces : Quaternion[] <<get>> = new Quaternion[12]
+    <<override>> + faceAdj : int[,] <<get>> = new int[12, 5]
+    <<override>> # distanceFromCenter : float <<get>> = 1.113516364411607f
+    <<override>> # distanceAdd : float <<get>> = 0.6180339887499f
+    <<override>> + nCases : int <<get>> = 1
+    <<override>> + FaceSize(levelSize:int) : int
+    <<override>> + Level2Stride(level:int) : int
+    <<override>> # GenerateGraph() : void
+}
+MultilevelSolidMaze <|-- MultilevelD12Maze
+abstract class MultilevelSolidMaze {
+    + nPlanes : int <<get>>
+    {abstract} + faces : Quaternion[] <<get>>
+    {abstract} + faceAdj : int[,] <<get>>
+    {abstract} # distanceFromCenter : float <<get>>
+    {abstract} # distanceAdd : float <<get>>
+    <<override>> + GetNormal(index:int) : Vector3
+    <<override>> + GetNorth(index:int) : Vector3
+    <<override>> + GetLevel(index:int) : int
+    {abstract} + FaceSize(levelSize:int) : int
+    <<override>> + LevelSize(level:int) : int
+}
+MultilevelMaze <|-- MultilevelSolidMaze
+class MultilevelSphericMaze {
+    <<override>> + nCases : int <<get>> = 1
+    <<override>> + GetNormal(index:int) : Vector3
+    <<override>> + GetNorth(index:int) : Vector3
+    <<override>> + GetLevel(index:int) : int
+    <<override>> + LevelSize(level:int) : int
+    <<override>> + Level2Stride(level:int) : int
+    # <<override>> GenerateGraph() : void
+}
+MultilevelMaze <|-- MultilevelSphericMaze
+MultilevelSphericMaze --> "delaunay" Delaunay
+class MultilevelD20Maze {
+    <<override>> + faces : Quaternion[] <<get>> = new Quaternion[20]
+    <<override>> + faceAdj : int[,] <<get>> = new int[20, 4]
+    <<override>> # distanceFromCenter : float <<get>> = Mathf.Sqrt(3) * (3 + Mathf.Sqrt(5)) / 12
+    <<override>> # distanceAdd : float <<get>> = 3 / (2 * Mathf.Sin(54 * Mathf.Deg2Rad))
+}
+MultilevelD4Maze <|-- MultilevelD20Maze
+class MultilevelD8Maze {
+    <<override>> + faces : Quaternion[] <<get>> = new Quaternion[8]
+    <<override>> + faceAdj : int[,] <<get>> = new int[8, 4]
+    <<override>> # distanceFromCenter : float <<get>> = 1 / Mathf.Sqrt(6f)
+    <<override>> # distanceAdd : float <<get>> = 3 / Mathf.Sqrt(2f)
+}
+MultilevelD4Maze <|-- MultilevelD8Maze
+class MultilevelD4Maze {
+    <<override>> + faces : Quaternion[] <<get>> = new Quaternion[4]
+    <<override>> + faceAdj : int[,] <<get>> = new int[4, 4]
+    <<override>> # distanceFromCenter : float <<get>> =  1 / Mathf.Sqrt(24f)
+    <<override>> # distanceAdd : float <<get>> = 3
+    <<override>> + nCases : int <<get>> = 3
+    <<override>> + FaceSize(levelSize:int) : int
+    <<override>> + Level2Stride(level:int) : int
+    <<override>> # GenerateGraph() : void
+}
+MultilevelSolidMaze <|-- MultilevelD4Maze
+class Delaunay {
+    - points : List<Vector2>
+    - orderedPoints : List<int>
+    + stride : int = 0
+    + Delaunay(maze:MultilevelSphericMaze, points:List<Vector2>, stride:int)
+    + Triangulate() : void
+    + Flip(a:int, b:int, common1:int, common2:int) : void
+    + AddToHull(point:int) : void
+    + Distance2(a:int, b:int) : float
+    + Distance(a:int, b:int) : float
+    + IsCounterClockwise(a:int, b:int, c:int) : bool
+    + FindCircumcenter(a:int, b:int, c:int) : Vector2
+}
+Delaunay --> "maze" MultilevelSphericMaze
+class Triangle {
+    - vertices : List<int>
+    - CircumRadius : float
+    + circumRadius : float <<get>>
+}
+Triangle --> "delaunay" Delaunay
+@enduml

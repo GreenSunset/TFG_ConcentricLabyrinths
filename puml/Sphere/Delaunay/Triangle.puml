@@ -1,0 +1,14 @@
+@startuml
+class Triangle {
+    - CircumRadius : float
+    + circumRadius : float <<get>>
+    + Triangle(a:int, b:int, c:int, del:Delaunay)
+    + <<override>> ToString() : string
+}
+class "List`1"<T> {
+}
+Triangle --> "CircumCentre" Vector2
+Triangle --> "delaunay" Delaunay
+Triangle o-> "vertices<int>" "List`1"
+Triangle --> "circumCentre" Vector2
+@enduml

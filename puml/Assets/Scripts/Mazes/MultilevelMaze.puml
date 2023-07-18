@@ -1,0 +1,28 @@
+@startuml
+abstract class MultilevelMaze {
+    + entryIndex : int <<get>> <<protected set>>
+    + maxSize : int = 5
+    {abstract} + nCases : int <<get>>
+    {abstract} + GetNormal(index:int) : Vector3
+    {abstract} + GetNorth(index:int) : Vector3
+    {abstract} + GetLevel(index:int) : int
+    {abstract} + LevelSize(levelSize:int) : int
+    {abstract} + Level2Stride(levelSize:int) : int
+    + Generate() : void
+    + Clear() : void
+    {abstract} # GenerateGraph() : void
+    <<virtual>> # GenerateMaze() : void
+    <<virtual>> # GenerateMazeUnrestricted() : void
+    + AverageNeighborDistance() : void
+    + CheckMaze() : void
+    + Test() : void
+}
+class "List`1"<T> {
+}
+class "Dictionary`2"<T1,T2> {
+}
+MonoBehaviour <|-- MultilevelMaze
+MultilevelMaze o-> "points<Vector3>" "List`1"
+MultilevelMaze o-> "graph<int,List<int>>" "Dictionary`2"
+MultilevelMaze o-> "maze<int,HashSet<int>>" "Dictionary`2"
+@enduml

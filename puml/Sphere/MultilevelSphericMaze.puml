@@ -1,0 +1,13 @@
+@startuml
+class MultilevelSphericMaze {
+    <<override>> + nCases : int <<get>> = 1
+    <<override>> + GetNormal(index:int) : Vector3
+    <<override>> + GetNorth(index:int) : Vector3
+    <<override>> + GetLevel(index:int) : int
+    <<override>> + LevelSize(level:int) : int
+    <<override>> + Level2Stride(level:int) : int
+    # <<override>> GenerateGraph() : void
+}
+MultilevelMaze <|-- MultilevelSphericMaze
+MultilevelSphericMaze --> "delaunay" Delaunay
+@enduml

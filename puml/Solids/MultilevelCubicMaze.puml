@@ -1,0 +1,16 @@
+@startuml
+class MultilevelCubicMaze {
+    <<override>> # distanceFromCenter : float <<get>>
+    <<override>> # distanceAdd : float <<get>>
+    <<override>> + nCases : int <<get>> = 2
+    <<override>> + FaceSize(levelSize:int) : int
+    <<override>> + Level2Stride(level:int) : int
+    <<override>> + Coord2Idx(x:int, y:int, plane:int, level:int) : int
+    <<override>> + Idx2Coord(idx:int) : Coordinate
+    <<override>> # GenerateGraph() : void
+}
+class "List`1"<T> {
+}
+MultilevelSolidMaze <|-- MultilevelCubicMaze
+MultilevelCubicMaze o-> "faceAdj<List<int>>" "List`1"
+@enduml
